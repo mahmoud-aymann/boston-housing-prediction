@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston Housing Price Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .error {
+            background: #fee;
+            border-left-color: #e74c3c;
+            color: #c0392b;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+        
+        .info ul {
+            color: #0c5460;
+            padding-left: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Boston Housing Price Prediction</h1>
+            <p>Predict house prices using Machine Learning with Data Normalization</p>
+        </div>
+        
+        <div class="content">
+            <div class="info">
+                <h4>📊 Model Information</h4>
+                <ul>
+                    <li><strong>Algorithm:</strong> Decision Tree Regressor with PowerTransformer</li>
+                    <li><strong>Accuracy:</strong> 78.79% (R² Score)</li>
+                    <li><strong>Features:</strong> Number of rooms, Poverty level, Student-teacher ratio</li>
+                </ul>
+            </div>
+            
+            <form id="predictionForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rm">🏠 Number of Rooms (RM)</label>
+                        <input type="number" id="rm" name="rm" min="3" max="9" step="0.1" value="6" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lstat">📉 Poverty Level (LSTAT) %</label>
+                        <input type="number" id="lstat" name="lstat" min="1" max="40" step="0.1" value="15" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ptratio">🎓 Student-Teacher Ratio</label>
+                        <input type="number" id="ptratio" name="ptratio" min="10" max="25" step="0.1" value="15" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">🔮 Predict Price</button>
+            </form>
+            
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Predicting...</p></div>';
+            
+            const formData = {
+                rm: parseFloat(document.getElementById('rm').value),
+                lstat: parseFloat(document.getElementById('lstat').value),
+                ptratio: parseFloat(document.getElementById('ptratio').value)
+            };
+            
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>🎯 Prediction Result</h3>
+                            <div class="price">${data.formatted_prediction}</div>
+                            <p><strong>Input:</strong> ${data.input_data.rm} rooms, ${data.input_data.lstat}% poverty, ${data.input_data.ptratio}:1 ratio</p>
+                            <p><strong>Model Accuracy:</strong> ${(data.model_info.r2_score * 100).toFixed(2)}%</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Connection Error</h3>
+                        <p>Unable to connect to the prediction service. Please try again later.</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
