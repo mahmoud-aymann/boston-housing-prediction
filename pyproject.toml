@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boston-housing-prediction"
+version = "1.0.0"
+description = "Boston Housing Price Prediction with Machine Learning"
+requires-python = ">=3.8"
+dependencies = [
+    "Flask>=2.3.0",
+    "numpy>=1.21.0",
+    "pandas>=1.5.0",
+    "scikit-learn>=1.2.0",
+    "Werkzeug>=2.3.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api*", "public*"]
