@@ -3,7 +3,7 @@
 A machine learning project that predicts Boston housing prices using a Decision Tree Regressor with data normalization. The project includes a complete Jupyter notebook analysis and a Flask web application for interactive predictions.
 
 ## Project Structure
-
+ 
 ```
 boston-housing/
 ├── boston_housing.ipynb      # Complete Jupyter notebook analysis
